@@ -154,7 +154,6 @@ public class SpringPsiUtils extends ParamPsiUtils {
      * @param psiClass  类
      * @param psiMethod 方法
      * @return 路径, 路径开头为 /
-     * @see SpringPsiUtils#path(PsiAnnotation)
      */
     @NotNull
     public static String path(PsiClass psiClass, @NotNull PsiMethod psiMethod) {
@@ -184,8 +183,11 @@ public class SpringPsiUtils extends ParamPsiUtils {
     public static String classPath(PsiClass psiClass) {
         // controller 路径
         PsiAnnotation annotation = AnnotationUtil.findAnnotation(psiClass, SpringConstant.REQUEST_MAPPING);
-
-        return path(annotation);
+        if (annotation==null) {
+            annotation = AnnotationUtil.findAnnotation(psiClass,SpringConstant.FEIGN_CLIENT);
+            return path(annotation, "path");
+        }
+        return path(annotation, "value");
     }
 
     /**
@@ -200,7 +202,7 @@ public class SpringPsiUtils extends ParamPsiUtils {
 
         // 是否包含 Spring xxxMapping 注解
         if (AnnotationUtil.isAnnotated(psiMethod, SpringConstant.MAPPING_ANNOTATIONS, 0)) {
-            url = path(AnnotationUtil.findAnnotation(psiMethod, SpringConstant.MAPPING_ANNOTATIONS));
+            url = path(AnnotationUtil.findAnnotation(psiMethod, SpringConstant.MAPPING_ANNOTATIONS), "value");
         }
         return url;
     }
@@ -213,25 +215,28 @@ public class SpringPsiUtils extends ParamPsiUtils {
      * 空时为 ""
      *
      * @param annotation 需要解析路径的注解, 可能是 xxxController 也可能是 xxxMapping
+     * @param values  注解参数
      * @return 注解 value 字段对应的路径
      */
     @NotNull
-    private static String path(PsiAnnotation annotation) {
+    private static String path(PsiAnnotation annotation, String... values) {
         if (annotation == null) {
             return "";
         }
-        // 获取注解中 value 字段对应的值
-        String path = AnnotationUtil.getStringAttributeValue(annotation, "value");
-        if (path != null) {
-            if (!path.startsWith("/")) {
-                path = "/" + path;
-            }
+        for (String value : values) {
+            // 获取注解中 value 字段对应的值
+            String path = AnnotationUtil.getStringAttributeValue(annotation, value);
+            if (path != null) {
+                if (!path.startsWith("/")) {
+                    path = "/" + path;
+                }
 
-            if (path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
-            }
+                if (path.endsWith("/")) {
+                    path = path.substring(0, path.length() - 1);
+                }
 
-            return path;
+                return path;
+            }
         }
         return "";
     }
