@@ -4,17 +4,7 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Computable;
-import com.intellij.psi.CommonClassNames;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiPrimitiveType;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.java.stubs.index.JavaAnnotationIndex;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -366,7 +356,11 @@ public class SpringPsiUtils extends ParamPsiUtils {
                     if (DocViewUtils.isExcludeField(field)) {
                         continue;
                     }
-                    ParamPsiUtils.buildBodyParam(field, null, root);
+                    Map<String, PsiType> genericMap = null;
+                    if(type instanceof PsiClassType){
+                        genericMap = CustomPsiUtils.getGenericsMap((PsiClassType) type);
+                    }
+                    ParamPsiUtils.buildBodyParam(field, genericMap, root);
                 }
 
             }

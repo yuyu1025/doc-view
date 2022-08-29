@@ -30,7 +30,6 @@ public class ParamPsiUtils {
     public static void buildBodyParam(PsiField field, Map<String, PsiType> genericsMap, Body parent) {
 
         PsiType type = field.getType();
-
         Body body = new Body();
         body.setRequired(DocViewUtils.isRequired(field));
         body.setName(field.getName());
